@@ -1,8 +1,6 @@
 #include <ensemble.hpp>
 #include <deposition.hpp>
-#include <json/json.h>
 #include <string>
-#include <iostream>
 #include <fstream>
 
 int main() {
