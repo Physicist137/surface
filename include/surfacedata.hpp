@@ -69,6 +69,9 @@ SurfaceData<FloatingPoint> operator/(const SurfaceData<FloatingPoint>& a, const 
 // Definition of member class functions
 template <typename FloatingPoint>
 void SurfaceData<FloatingPoint>::compute() {
+	// FIXME: This is simply plain wrong!! PLAIN WRONG.
+	// FIXME: Fix skewness and kurtosis calculations.
+
 	FloatingPoint var = _moments[1] - _moments[0] * _moments[0];
 	FloatingPoint dev = std::sqrt(var);
 	FloatingPoint ske = _moments[2] / (dev * dev * dev);
