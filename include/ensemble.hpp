@@ -1,6 +1,8 @@
 #pragma once
 #include "growth.hpp"
 #include "statdata.hpp"
+#include <json/json.h>
+#include <json/writer.h>
 
 template <typename Integer, typename FloatingPoint, unsigned systems>
 class SurfaceGrowthEnsemble : private SurfaceGrowth<Integer, FloatingPoint> {
@@ -45,9 +47,11 @@ public:
 		return _log_independent;
 	}
 
-	// Save dynamics at file.
+	// Save dynamics at file. FIXME: ERASE ME!
 	void saveFile(const std::string& str) const;
 
+	// Save dynamic at Json file.
+	void saveJson(std::string& str) const;
 };
 
 template <typename Integer, typename FloatingPoint, unsigned systems>
@@ -73,6 +77,60 @@ std::function<void(Surface<Integer>& surface,int)> depositionMethod) {
 	}
 
 	_nl = SurfaceGrowth<Integer, FloatingPoint>::_nl;
+}
+
+template <typename Integer, typename FloatingPoint, unsigned systems>
+void SurfaceGrowthEnsemble<Integer, FloatingPoint, systems>::saveJson(std::string& str) const {
+	Json::Value root;
+	// Deposition method
+	root["deposition-type"] = "";
+
+	// Initial surface data
+	root["initial-surface"]["size"]["value"] = _surface.size();
+	root["initial-surface"]["size"]["text"] = "";
+	
+	// Initial Surface
+	int szi = _surface.size();
+	for (int i = 0; i < szi; ++i) {
+		root["initial-surface"]["surface"]["value"][i] = _surface[i];
+	}
+	
+	// TODO: Final Surface
+	
+	// Simulation growth
+	int sz = _nl.size();
+	for (int i = 0; i < sz; ++i) root["growth"]["nl"][i] = _nl[i];
+	for (int i = 0; i < sz; ++i) root["growth"]["average"]["height"][i] = _data[i].average().height();
+	for (int i = 0; i < sz; ++i) root["growth"]["variance"]["height"][i] = _data[i].variance().height();
+	for (int i = 0; i < sz; ++i) root["growth"]["average"]["width"][i] = _data[i].average().width();
+	for (int i = 0; i < sz; ++i) root["growth"]["variance"]["width"][i] = _data[i].variance().width();
+	for (int i = 0; i < sz; ++i) root["growth"]["average"]["skewness"][i] = _data[i].average().skewness();
+	for (int i = 0; i < sz; ++i) root["growth"]["variance"]["skewness"][i] = _data[i].variance().skewness();
+	for (int i = 0; i < sz; ++i) root["growth"]["average"]["kurtosis"][i] = _data[i].average().kurtosis();
+	for (int i = 0; i < sz; ++i) root["growth"]["variance"]["kurtosis"][i] = _data[i].variance().kurtosis();
+	
+	// Log Linear regression data
+	root["log_regression"]["inclination"]["average"]["height"] = _log_inclination.average().height();
+	root["log_regression"]["inclination"]["variance"]["height"] = _log_inclination.variance().height();
+	root["log_regression"]["inclination"]["average"]["width"] = _log_inclination.average().width();
+	root["log_regression"]["inclination"]["variance"]["width"] = _log_inclination.variance().width();
+	root["log_regression"]["inclination"]["average"]["skewness"] = _log_inclination.average().skewness();
+	root["log_regression"]["inclination"]["variance"]["skewness"] = _log_inclination.variance().skewness();
+	root["log_regression"]["inclination"]["average"]["kurtosis"] = _log_inclination.average().kurtosis();
+	root["log_regression"]["inclination"]["variance"]["kurtosis"] = _log_inclination.variance().kurtosis();
+
+	root["log_regression"]["independent"]["average"]["height"] = _log_independent.average().height();
+	root["log_regression"]["independent"]["variance"]["height"] = _log_independent.variance().height();
+	root["log_regression"]["independent"]["average"]["width"] = _log_independent.average().width();
+	root["log_regression"]["independent"]["variance"]["width"] = _log_independent.variance().width();
+	root["log_regression"]["independent"]["average"]["skewness"] = _log_independent.average().skewness();
+	root["log_regression"]["independent"]["variance"]["skewness"] = _log_independent.variance().skewness();
+	root["log_regression"]["independent"]["average"]["kurtosis"] = _log_independent.average().kurtosis();
+	root["log_regression"]["independent"]["variance"]["kurtosis"] = _log_independent.variance().kurtosis();	
+	
+	// Return
+	Json::StreamWriterBuilder writer;
+	str = Json::writeString(writer, root);
 }
 
 
