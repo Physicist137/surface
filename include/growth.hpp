@@ -114,7 +114,7 @@ template <typename Integer, typename FloatingPoint>
 void SurfaceGrowth<Integer, FloatingPoint>::saveFile(const std::string& str) const {
 	std::ofstream file(str);
 	int size = _data.size();
-	
+
 	file << "nl = [" << _nl[0];
 	for (int i = 1; i < size; ++i) file << ", " << _nl[i];
 	file << "];" << std::endl << std::endl;

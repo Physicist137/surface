@@ -20,16 +20,13 @@ class SurfaceGrowthEnsemble : private SurfaceGrowth<Integer, FloatingPoint> {
 public:
 	// Constructor functions
 	explicit SurfaceGrowthEnsemble(unsigned size)
-	: SurfaceGrowth<Integer, FloatingPoint>(size),
-	 _data(size), _nl(size),  _surface(size) {}
+	: SurfaceGrowth<Integer, FloatingPoint>(size), _surface(size) {}
 	
 	explicit SurfaceGrowthEnsemble(const Surface<Integer>& surface)
-	: SurfaceGrowth<Integer, FloatingPoint>(surface),
-	 _data(surface.size()), _nl(surface.size()), _surface(surface) {}
+	: SurfaceGrowth<Integer, FloatingPoint>(surface), _surface(surface) {}
 	
 	SurfaceGrowthEnsemble(unsigned sx, unsigned sy)
-	: SurfaceGrowth<Integer, FloatingPoint>(sx, sy), 
-	_data(sx*sy), _nl(sx*sy), _surface(sx, sy) {}
+	: SurfaceGrowth<Integer, FloatingPoint>(sx, sy), _surface(sx, sy) {}
 
 
 	// Growth Functions
@@ -59,13 +56,15 @@ void SurfaceGrowthEnsemble<Integer, FloatingPoint, systems>::deposition(
 unsigned deposition_per_iteration, const FloatingPoint& nltotal,
 std::function<void(Surface<Integer>& surface,int)> depositionMethod) {
 
-	int sz = SurfaceGrowth<Integer, FloatingPoint>::size();
-	
 	for (int s = 0; s < systems; ++s) {
 		// Run the deposition
 		SurfaceGrowth<Integer, FloatingPoint>::clear(_surface);
 		SurfaceGrowth<Integer, FloatingPoint>::deposition(deposition_per_iteration, nltotal, depositionMethod);
-		
+	
+		// Size of the dataset
+		int sz = SurfaceGrowth<Integer, FloatingPoint>::_data.size();
+		if (s == 0) _data.resize(sz);
+
 		// Update the surface ensemble
 		for (int i = 0; i < sz; ++i) _data[i].newData(SurfaceGrowth<Integer, FloatingPoint>::_data[i]);
 	
@@ -97,7 +96,7 @@ void SurfaceGrowthEnsemble<Integer, FloatingPoint, systems>::saveJson(std::strin
 	
 	// TODO: Final Surface
 	
-		// Register the nl parameter
+	// Register the nl parameter
 	int sz = _nl.size();
 	for (int i = 0; i < sz; ++i) root["growth"]["nl"][i] = _nl[i];
 	
@@ -119,7 +118,6 @@ void SurfaceGrowthEnsemble<Integer, FloatingPoint, systems>::saveJson(std::strin
 	Json::StreamWriterBuilder writer;
 	str = Json::writeString(writer, root);
 }
-
 
 template <typename Integer, typename FloatingPoint, unsigned systems>
 void SurfaceGrowthEnsemble<Integer, FloatingPoint, systems>::saveFile(const std::string& str) const {
