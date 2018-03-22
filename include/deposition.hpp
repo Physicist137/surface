@@ -36,6 +36,6 @@ void ballisticDeposition2D(Surface<Integer>& surface, int depositions) {
 		else if (site == 0) surface[site] = std::max<Integer>(surface[site+1], 1+surface[site]);
 		else surface[site] = std::max<Integer>(
 			std::max<Integer>(surface[site-1], 1+surface[site]), 
-			surface[site]+1);
+			surface[site+1]);
 	}
 }
