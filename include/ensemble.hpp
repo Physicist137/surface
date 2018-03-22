@@ -97,37 +97,24 @@ void SurfaceGrowthEnsemble<Integer, FloatingPoint, systems>::saveJson(std::strin
 	
 	// TODO: Final Surface
 	
-	// Simulation growth
+		// Register the nl parameter
 	int sz = _nl.size();
 	for (int i = 0; i < sz; ++i) root["growth"]["nl"][i] = _nl[i];
-	for (int i = 0; i < sz; ++i) root["growth"]["average"]["height"][i] = _data[i].average().height();
-	for (int i = 0; i < sz; ++i) root["growth"]["variance"]["height"][i] = _data[i].variance().height();
-	for (int i = 0; i < sz; ++i) root["growth"]["average"]["width"][i] = _data[i].average().width();
-	for (int i = 0; i < sz; ++i) root["growth"]["variance"]["width"][i] = _data[i].variance().width();
-	for (int i = 0; i < sz; ++i) root["growth"]["average"]["skewness"][i] = _data[i].average().skewness();
-	for (int i = 0; i < sz; ++i) root["growth"]["variance"]["skewness"][i] = _data[i].variance().skewness();
-	for (int i = 0; i < sz; ++i) root["growth"]["average"]["kurtosis"][i] = _data[i].average().kurtosis();
-	for (int i = 0; i < sz; ++i) root["growth"]["variance"]["kurtosis"][i] = _data[i].variance().kurtosis();
 	
-	// Log Linear regression data
-	root["log_regression"]["inclination"]["average"]["height"] = _log_inclination.average().height();
-	root["log_regression"]["inclination"]["variance"]["height"] = _log_inclination.variance().height();
-	root["log_regression"]["inclination"]["average"]["width"] = _log_inclination.average().width();
-	root["log_regression"]["inclination"]["variance"]["width"] = _log_inclination.variance().width();
-	root["log_regression"]["inclination"]["average"]["skewness"] = _log_inclination.average().skewness();
-	root["log_regression"]["inclination"]["variance"]["skewness"] = _log_inclination.variance().skewness();
-	root["log_regression"]["inclination"]["average"]["kurtosis"] = _log_inclination.average().kurtosis();
-	root["log_regression"]["inclination"]["variance"]["kurtosis"] = _log_inclination.variance().kurtosis();
+	std::array<std::string, 2> _stat_arg = {"average", "variance"};
+	std::array<std::string, 4> _data_arg = {"height", "width", "skewness", "kurtosis"};
+	for (const std::string& stat_arg : _stat_arg) {
+		for (const std::string& data_arg : _data_arg) {
+			// Simulation growth data
+			for (int i = 0; i < sz; ++i) 
+				root["growth"][stat_arg][data_arg][i] = _data[i][stat_arg][data_arg];
 
-	root["log_regression"]["independent"]["average"]["height"] = _log_independent.average().height();
-	root["log_regression"]["independent"]["variance"]["height"] = _log_independent.variance().height();
-	root["log_regression"]["independent"]["average"]["width"] = _log_independent.average().width();
-	root["log_regression"]["independent"]["variance"]["width"] = _log_independent.variance().width();
-	root["log_regression"]["independent"]["average"]["skewness"] = _log_independent.average().skewness();
-	root["log_regression"]["independent"]["variance"]["skewness"] = _log_independent.variance().skewness();
-	root["log_regression"]["independent"]["average"]["kurtosis"] = _log_independent.average().kurtosis();
-	root["log_regression"]["independent"]["variance"]["kurtosis"] = _log_independent.variance().kurtosis();	
-	
+			// Log Linear Regression data
+			root["log_regerssion"]["inclination"][stat_arg][data_arg] = _log_inclination[stat_arg][data_arg];
+			root["log_regerssion"]["independent"][stat_arg][data_arg] = _log_inclination[stat_arg][data_arg];
+		}
+	}
+
 	// Return
 	Json::StreamWriterBuilder writer;
 	str = Json::writeString(writer, root);

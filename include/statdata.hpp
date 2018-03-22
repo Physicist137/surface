@@ -35,6 +35,9 @@ public:
 	// Accessing more data
 	DataStructure average() const;
 	DataStructure variance() const;
+
+	// General accessing function
+	DataStructure operator[](const std::string& str) const;
 };
 
 template <typename DataStructure, typename FloatingPoint, unsigned order>
@@ -112,4 +115,11 @@ DataStructure StatisticalData<DataStructure, FloatingPoint, order>::average() co
 template <typename DataStructure, typename FloatingPoint, unsigned order>
 DataStructure StatisticalData<DataStructure, FloatingPoint, order>::variance() const {
 	return _moments[1] - _moments[0] * _moments[0];
+}
+
+template <typename DataStructure, typename FloatingPoint, unsigned order>
+DataStructure StatisticalData<DataStructure, FloatingPoint, order>::operator[](const std::string& str) const {
+	if (str == "average") return average();
+	else if (str == "variance") return variance();
+	else throw "Invalid argument at StatisticalData::operator[](std::string)";
 }

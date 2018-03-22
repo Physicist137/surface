@@ -29,6 +29,7 @@ public:
 	// Quick Access function.
 	FloatingPoint operator[](unsigned i) const;
 	FloatingPoint& operator[](unsigned i);
+	FloatingPoint operator[](const std::string& str) const;
 	
 	// Overloading operators
 	SurfaceData& operator+= (const SurfaceData<FloatingPoint>& other);
@@ -110,6 +111,15 @@ FloatingPoint& SurfaceData<FloatingPoint>::operator[](unsigned i) {
 	}
 	
 	throw "Invalid number in the quick accessing function";
+}
+
+template <typename FloatingPoint>
+FloatingPoint SurfaceData<FloatingPoint>::operator[](const std::string& str) const {
+	if (str == "height") return height();
+	else if (str == "width") return width();
+	else if (str == "skewness") return skewness();
+	else if (str == "kurtosis") return kurtosis();
+	else throw "Invalid argument at SurfaceData::operator[](const std::string&) const";
 }
 
 
