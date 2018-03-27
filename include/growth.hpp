@@ -18,6 +18,11 @@ public:
 	explicit SurfaceGrowth(const Surface<Integer>& surface) : Surface<Integer>(surface) {}
 	SurfaceGrowth(unsigned sx, unsigned sy) : Surface<Integer>(sx, sy) {}
 	
+	// Inline Functions
+	inline unsigned nlSize() const {return _nl.size();}
+	inline unsigned dataSize() const {return _data.size();}
+	inline auto& dataValue(unsigned i) const {return _data[i];}
+
 	// Growth Functions
 	void deposition(unsigned deposition_per_iteration, const FloatingPoint& nltotal, 
 		std::function<void(Surface<Integer>& surface,int)> depositionMethod);

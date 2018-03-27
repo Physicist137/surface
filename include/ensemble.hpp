@@ -1,6 +1,8 @@
 #pragma once
 #include "growth.hpp"
 #include "statdata.hpp"
+#include <thread>
+#include <mutex>
 #include <json/json.h>
 #include <json/writer.h>
 
@@ -33,7 +35,10 @@ public:
 	void deposition(unsigned deposition_per_iteration, const FloatingPoint& nltotal,
 		std::function<void(Surface<Integer>& surface,int)> depositionMethod);
 
-	// TODO: Multithreaded deposition
+	// Multithreaded deposition
+	// It copies the surface multiple times. Be aware of memory restrictions.
+	void multithreadDeposition(unsigned threads, unsigned deposition_per_iteration, const FloatingPoint& nltotal,
+		std::function<void(Surface<Integer>& surface,int)> depositionMethod);
 	
 	// Accessing Functions
 	inline const StatisticalData<SurfaceData<FloatingPoint>, FloatingPoint>& logInclination() const {
@@ -72,10 +77,79 @@ std::function<void(Surface<Integer>& surface,int)> depositionMethod) {
 		auto coeff = SurfaceGrowth<Integer, FloatingPoint>::loglogfit();
 		_log_inclination.newData(coeff[0]);
 		_log_independent.newData(coeff[1]);
-
 	}
 
 	_nl = SurfaceGrowth<Integer, FloatingPoint>::_nl;
+}
+
+template <typename Integer, typename FloatingPoint, unsigned systems>
+void SurfaceGrowthEnsemble<Integer, FloatingPoint, systems>::multithreadDeposition(
+unsigned threads, unsigned deposition_per_iteration, const FloatingPoint& nltotal,
+std::function<void(Surface<Integer>& surface,int)> depositionMethod) {
+
+	// Mutex
+	std::mutex mutex;
+
+	// Lambda deposition function
+	auto lambda_deposition = [&](unsigned d, const FloatingPoint& t,
+	std::function<void(Surface<Integer>& surface,int)> dep) {
+		
+		// Initialize surface and do deposition
+		SurfaceGrowth<Integer, FloatingPoint> growthSurface(_surface);
+		growthSurface.deposition(deposition_per_iteration, nltotal, depositionMethod);
+
+		// Lock the resources using the mutex
+		std::lock_guard<std::mutex> guard(mutex);
+
+		// Check the size of the data
+		int sz = growthSurface.dataSize();
+		if (_data.empty()) _data.resize(sz);
+		
+		// Update the surface ensemble.
+		for (int i = 0; i < sz; ++i) _data[i].newData(growthSurface.dataValue(i));
+		// Compute the loglog linear coeficients
+		auto coeff = growthSurface.loglogfit();
+		_log_inclination.newData(coeff[0]);
+		_log_inclination.newData(coeff[1]);
+	};
+
+	// Initialize the threads
+	int done = 0;
+	std::vector<std::thread> thread_vector;
+	
+	// Handle the threads
+	while (done < systems) {
+		int total = std::min(threads, systems-done);
+
+		// Create the threads and execute the lambda
+		for (int i = 0; i < total; ++i) {
+			thread_vector.emplace_back(lambda_deposition, deposition_per_iteration, nltotal, depositionMethod);
+		}
+
+		// Wait for termination of the threads.
+		for (std::thread& th : thread_vector) {
+			th.join();
+			++done;
+		}
+
+		// Clear the thread_vector
+		thread_vector.clear();
+	}
+
+	// Calculate the nl values
+	int size = _data.size();
+	FloatingPoint szz = static_cast<FloatingPoint>(_surface.size());
+	FloatingPoint deppi = static_cast<FloatingPoint>(deposition_per_iteration);
+	FloatingPoint step = deppi / szz;
+
+	FloatingPoint nlcurrent;
+	if (SurfaceGrowth<Integer, FloatingPoint>::_nl.empty()) nlcurrent = FloatingPoint();
+	else nlcurrent = SurfaceGrowth<Integer, FloatingPoint>::_nl.back();
+
+	for (int i = 0; i < size; ++i) {
+		_nl.push_back(nlcurrent);
+		nlcurrent += step;
+	}
 }
 
 template <typename Integer, typename FloatingPoint, unsigned systems>
