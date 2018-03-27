@@ -28,6 +28,8 @@ public:
 	
 	// Data Analysis Function.
 	std::array<SurfaceData<FloatingPoint>, 2> loglogfit() const;
+	std::array<SurfaceData<FloatingPoint>, 2> loglogfit(int from, int to) const;
+	std::array<SurfaceData<FloatingPoint>, 2> loglogfit(const FloatingPoint& nlfrom, const FloatingPoint& nlto) const;
 	
 	// Save at file
 	void saveFile(const std::string& str) const;
@@ -75,10 +77,10 @@ void SurfaceGrowth<Integer, FloatingPoint>::clear(const Surface<Integer>& surfac
 	_data.clear();
 }
 
-
+// Including from. Excluding to.
 template <typename Integer, typename FloatingPoint>
-std::array<SurfaceData<FloatingPoint>, 2> SurfaceGrowth<Integer, FloatingPoint>::loglogfit() const {
-	int size = _nl.size();
+std::array<SurfaceData<FloatingPoint>, 2> SurfaceGrowth<Integer, FloatingPoint>::loglogfit(int from, int to) const {
+	int size = to - from + 1;
 	FloatingPoint avnl = FloatingPoint();
 	SurfaceData<FloatingPoint> avda = SurfaceData<FloatingPoint>();
 	FloatingPoint fsize = static_cast<FloatingPoint>(size);
@@ -88,7 +90,7 @@ std::array<SurfaceData<FloatingPoint>, 2> SurfaceGrowth<Integer, FloatingPoint>:
 	std::function<FloatingPoint(FloatingPoint)> log = static_cast<type>(std::log);
 	
 	// Compute the averages
-	for (int i = 1; i < size; ++i) {
+	for (int i = from; i < to; ++i) {
 		avnl += std::log(_nl[i]) / fsize;
 		avda += _data[i].runFunction(log) / fsize;
 	}
@@ -96,7 +98,7 @@ std::array<SurfaceData<FloatingPoint>, 2> SurfaceGrowth<Integer, FloatingPoint>:
 	// Compute the inclination parameter
 	SurfaceData<FloatingPoint> num = SurfaceData<FloatingPoint>();
 	FloatingPoint den = FloatingPoint();
-	for (int i = 1; i < size; ++i) {
+	for (int i = from; i < to; ++i) {
 		num += std::log(_nl[i]) * (_data[i].runFunction(log) - avda);
 		den += std::log(_nl[i]) * (std::log(_nl[i]) - avnl);
 	}
@@ -108,6 +110,27 @@ std::array<SurfaceData<FloatingPoint>, 2> SurfaceGrowth<Integer, FloatingPoint>:
 	
 	// Return result.
 	return std::array<SurfaceData<FloatingPoint>, 2>({a, b});
+}
+
+template <typename Integer, typename FloatingPoint>
+std::array<SurfaceData<FloatingPoint>, 2> SurfaceGrowth<Integer, FloatingPoint>::loglogfit() const {
+	if (std::abs(_nl[0]) < 0.01) return loglogfit(1, _nl.size());
+	else return loglogfit(0, _nl.size());
+}
+
+
+template <typename Integer, typename FloatingPoint>
+std::array<SurfaceData<FloatingPoint>, 2> SurfaceGrowth<Integer, FloatingPoint>::loglogfit(
+const FloatingPoint& nlfrom, const FloatingPoint& nlto) const {
+	// You can do better! Have a O(log n) search please! FIXME.
+	int size = _nl.size();
+	int from, to;
+	for (int i = 0; i < size; ++i) {
+		if (_nl[i] < nlfrom) from = i;
+		if (_nl[i] > nlto) to = i;
+	}
+
+	return loglogfit(from, to);
 }
 
 template <typename Integer, typename FloatingPoint>
