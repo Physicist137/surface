@@ -91,8 +91,7 @@ std::function<void(Surface<Integer>& surface,int)> depositionMethod) {
 	std::mutex mutex;
 
 	// Lambda deposition function
-	auto lambda_deposition = [&](unsigned d, const FloatingPoint& t,
-	std::function<void(Surface<Integer>& surface,int)> dep) {
+	auto lambda_deposition = [&]() {
 		
 		// Initialize surface and do deposition
 		SurfaceGrowth<Integer, FloatingPoint> growthSurface(_surface);
@@ -107,6 +106,7 @@ std::function<void(Surface<Integer>& surface,int)> depositionMethod) {
 		
 		// Update the surface ensemble.
 		for (int i = 0; i < sz; ++i) _data[i].newData(growthSurface.dataValue(i));
+		
 		// Compute the loglog linear coeficients
 		auto coeff = growthSurface.loglogfit();
 		_log_inclination.newData(coeff[0]);
@@ -123,7 +123,7 @@ std::function<void(Surface<Integer>& surface,int)> depositionMethod) {
 
 		// Create the threads and execute the lambda
 		for (int i = 0; i < total; ++i) {
-			thread_vector.emplace_back(lambda_deposition, deposition_per_iteration, nltotal, depositionMethod);
+			thread_vector.emplace_back(lambda_deposition);
 		}
 
 		// Wait for termination of the threads.
