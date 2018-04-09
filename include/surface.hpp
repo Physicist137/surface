@@ -110,17 +110,17 @@ template <typename Integer>
 template <typename FloatingPoint>
 SurfaceData<FloatingPoint> Surface<Integer>::surfaceData() const {
 	// Define the moments.
-	std::array<FloatingPoint, 4> moment;
-	std::array<FloatingPoint, 4> central;
+	std::array<FloatingPoint, 4> moment = {0, 0, 0, 0};
+	std::array<FloatingPoint, 4> central = {0, 0, 0, 0};
 
 	// Calculate the moments around zero.
 	for (unsigned i = 0; i < _size; ++i) {
 		FloatingPoint size = static_cast<FloatingPoint>(_size);
 		FloatingPoint height = static_cast<FloatingPoint>(_grid[i]);
-		FloatingPoint power[4] = {1, 1, 1, 1};
+		FloatingPoint power[4];
 		
 		power[0] = height;
-		for (unsigned n = 1; n < 4; ++n) power[n] = height * power[n-1];
+		for (unsigned n = 1; n < 4; ++n) power[n] = power[0] * power[n-1];
 		for (unsigned n = 0; n < 4; ++n) moment[n] += power[n] / size; 
 	}
 
@@ -129,10 +129,10 @@ SurfaceData<FloatingPoint> Surface<Integer>::surfaceData() const {
 	for (unsigned i = 0; i < _size; ++i) {
 		FloatingPoint size = static_cast<FloatingPoint>(_size);
 		FloatingPoint height = static_cast<FloatingPoint>(_grid[i]);
-		FloatingPoint power[4] = {1, 1, 1, 1};
+		FloatingPoint power[4];
 		
 		power[0] = height - av;
-		for (unsigned n = 1; n < 4; ++n) power[n] = (height - av) * power[n-1];
+		for (unsigned n = 1; n < 4; ++n) power[n] = power[0] * power[n-1];
 		for (unsigned n = 0; n < 4; ++n) central[n] += power[n] / size; 
 	}
 

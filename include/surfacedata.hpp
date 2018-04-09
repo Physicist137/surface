@@ -35,7 +35,7 @@ public:
 
 	// Accessing Functions: Surface Data
 	inline FloatingPoint height() const {return _moments[0];}
-	inline FloatingPoint variance() const {return _moments[0] * _moments[0] - _moments[1];}
+	inline FloatingPoint variance() const {return _centralMoments[1];}
 	inline FloatingPoint width() const {return _width;}
 	inline FloatingPoint skewness() const {return _skewness;}
 	inline FloatingPoint kurtosis() const {return _kurtosis;}
