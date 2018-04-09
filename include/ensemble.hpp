@@ -31,13 +31,13 @@ public:
 	: SurfaceGrowth<Integer, FloatingPoint>(sx, sy), _surface(sx, sy) {}
 
 
-	// Growth Functions
+	// Single threaded deposition
 	void deposition(unsigned deposition_per_iteration, const FloatingPoint& nltotal,
 		std::function<void(Surface<Integer>& surface,int)> depositionMethod);
 
 	// Multithreaded deposition
-	// It copies the surface multiple times. Be aware of memory restrictions.
-	void multithreadDeposition(unsigned threads, unsigned deposition_per_iteration, const FloatingPoint& nltotal,
+	void multithreadDeposition(unsigned threads,
+		unsigned deposition_per_iteration, const FloatingPoint& nltotal,
 		std::function<void(Surface<Integer>& surface,int)> depositionMethod);
 	
 	// Accessing Functions
@@ -110,7 +110,7 @@ std::function<void(Surface<Integer>& surface,int)> depositionMethod) {
 		// Compute the loglog linear coeficients
 		auto coeff = growthSurface.loglogfit();
 		_log_inclination.newData(coeff[0]);
-		_log_inclination.newData(coeff[1]);
+		_log_independent.newData(coeff[1]);
 	};
 
 	// Initialize the threads
@@ -136,7 +136,8 @@ std::function<void(Surface<Integer>& surface,int)> depositionMethod) {
 		thread_vector.clear();
 	}
 
-	// Calculate the nl values
+	// Calculate the nl values.
+	// FIXME: Possible solution: To have an bool argument in the lambda, to set _nl from growthSurface.
 	int size = _data.size();
 	FloatingPoint szz = static_cast<FloatingPoint>(_surface.size());
 	FloatingPoint deppi = static_cast<FloatingPoint>(deposition_per_iteration);
@@ -183,8 +184,8 @@ void SurfaceGrowthEnsemble<Integer, FloatingPoint, systems>::saveJson(std::strin
 				root["growth"][stat_arg][data_arg][i] = _data[i][stat_arg][data_arg];
 
 			// Log Linear Regression data
-			root["log_regerssion"]["inclination"][stat_arg][data_arg] = _log_inclination[stat_arg][data_arg];
-			root["log_regerssion"]["independent"][stat_arg][data_arg] = _log_inclination[stat_arg][data_arg];
+			root["log_regression"]["inclination"][stat_arg][data_arg] = _log_inclination[stat_arg][data_arg];
+			root["log_regression"]["independent"][stat_arg][data_arg] = _log_inclination[stat_arg][data_arg];
 		}
 	}
 
