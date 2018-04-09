@@ -109,18 +109,33 @@ FloatingPoint Surface<Integer>::nthCentralMomentHeight(unsigned order) const {
 template <typename Integer>
 template <typename FloatingPoint>
 SurfaceData<FloatingPoint> Surface<Integer>::surfaceData() const {
-	
-	// FIXME: DO something faster!
-	// Obviously you can do something faster!
-	return SurfaceData<FloatingPoint>({
-		nthMomentHeight<FloatingPoint>(1),
-		nthMomentHeight<FloatingPoint>(2),
-		nthMomentHeight<FloatingPoint>(3),
-		nthMomentHeight<FloatingPoint>(4)
-		}, {
-		nthCentralMomentHeight<FloatingPoint>(1),
-		nthCentralMomentHeight<FloatingPoint>(2),
-		nthCentralMomentHeight<FloatingPoint>(3),
-		nthCentralMomentHeight<FloatingPoint>(4),
-	});
+	// Define the moments.
+	std::array<FloatingPoint, 4> moment;
+	std::array<FloatingPoint, 4> central;
+
+	// Calculate the moments around zero.
+	for (unsigned i = 0; i < _size; ++i) {
+		FloatingPoint size = static_cast<FloatingPoint>(_size);
+		FloatingPoint height = static_cast<FloatingPoint>(_grid[i]);
+		FloatingPoint power[4] = {1, 1, 1, 1};
+		
+		power[0] = height;
+		for (unsigned n = 1; n < 4; ++n) power[n] = height * power[n-1];
+		for (unsigned n = 0; n < 4; ++n) moment[n] += power[n] / size; 
+	}
+
+	// Calculate the central moments
+	FloatingPoint av = moment[0];
+	for (unsigned i = 0; i < _size; ++i) {
+		FloatingPoint size = static_cast<FloatingPoint>(_size);
+		FloatingPoint height = static_cast<FloatingPoint>(_grid[i]);
+		FloatingPoint power[4] = {1, 1, 1, 1};
+		
+		power[0] = height - av;
+		for (unsigned n = 1; n < 4; ++n) power[n] = (height - av) * power[n-1];
+		for (unsigned n = 0; n < 4; ++n) moment[n] += power[n] / size; 
+	}
+
+	// Return the data
+	return SurfaceData<FloatingPoint>(moment, central);
 }
