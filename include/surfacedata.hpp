@@ -84,7 +84,7 @@ SurfaceData<FloatingPoint> operator/(const SurfaceData<FloatingPoint>& a, const 
 // Definition of member class functions
 template <typename FloatingPoint>
 void SurfaceData<FloatingPoint>::compute() {
-	FloatingPoint var = _centralMoment[1];
+	FloatingPoint var = _centralMoments[1];
 	FloatingPoint dev = std::sqrt(var);
 	FloatingPoint ske = _centralMoments[2] / (dev * dev * dev);
 	FloatingPoint kur = _centralMoments[3] / (var * var);

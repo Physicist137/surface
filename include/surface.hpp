@@ -133,7 +133,7 @@ SurfaceData<FloatingPoint> Surface<Integer>::surfaceData() const {
 		
 		power[0] = height - av;
 		for (unsigned n = 1; n < 4; ++n) power[n] = (height - av) * power[n-1];
-		for (unsigned n = 0; n < 4; ++n) moment[n] += power[n] / size; 
+		for (unsigned n = 0; n < 4; ++n) central[n] += power[n] / size; 
 	}
 
 	// Return the data
