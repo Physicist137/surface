@@ -42,9 +42,13 @@ public:
 	inline void clear() { _grid.clear(); }
 	inline void clear(const Surface<Integer>& surface) {_grid = surface._grid;}
 
-	// Surface calculation data
+	// Surface calculation data: nth moment
 	template <typename FloatingPoint>
 	FloatingPoint nthMomentHeight(unsigned order) const;
+
+	// Surface Calculation data: nth central moment
+	template <typename FloatingPoint>
+	FloatingPoint nthCentralMomentHeight(unsigned order) const;
 	
 	template <typename FloatingPoint>
 	SurfaceData<FloatingPoint> surfaceData() const;
@@ -76,13 +80,47 @@ FloatingPoint Surface<Integer>::nthMomentHeight(unsigned order) const {
 
 template <typename Integer>
 template <typename FloatingPoint>
+FloatingPoint Surface<Integer>::nthCentralMomentHeight(unsigned order) const {
+	// Trivial Central Moments.
+	if (order == 0) return 1;
+	if (order == 1) return 0;
+
+	// Calculate the first moment (average around zero)
+	FloatingPoint av = nthMomentHeight<FloatingPoint>(1);
+
+	// Compute the nthCentralMoment as requested
+	FloatingPoint result = FloatingPoint();
+	for (unsigned i = 0; i < _size; ++i) {
+		FloatingPoint size = static_cast<FloatingPoint>(_size);
+		FloatingPoint height = static_cast<FloatingPoint>(_grid[i]);
+		FloatingPoint power = 1;
+		
+		for (unsigned n = 0; n < order; ++n) {
+			power *= (height - av);
+		}
+		
+		result += power / size;
+	}
+
+	return result;
+}
+
+
+template <typename Integer>
+template <typename FloatingPoint>
 SurfaceData<FloatingPoint> Surface<Integer>::surfaceData() const {
 	
 	// FIXME: DO something faster!
+	// Obviously you can do something faster!
 	return SurfaceData<FloatingPoint>({
 		nthMomentHeight<FloatingPoint>(1),
 		nthMomentHeight<FloatingPoint>(2),
 		nthMomentHeight<FloatingPoint>(3),
 		nthMomentHeight<FloatingPoint>(4)
+		}, {
+		nthCentralMomentHeight<FloatingPoint>(1),
+		nthCentralMomentHeight<FloatingPoint>(2),
+		nthCentralMomentHeight<FloatingPoint>(3),
+		nthCentralMomentHeight<FloatingPoint>(4),
 	});
 }
