@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <fstream>
 #include "surfacedata.hpp"
 
 // TODO: Later: To create a SurfaceHD Class.
@@ -52,8 +53,9 @@ public:
 	
 	template <typename FloatingPoint>
 	SurfaceData<FloatingPoint> surfaceData() const;
-	
-	// TODO: To plot the surface somehow.
+
+	// Save the surface.
+	void saveProfile(const std::string& str) const;
 };
 
 
@@ -138,4 +140,16 @@ SurfaceData<FloatingPoint> Surface<Integer>::surfaceData() const {
 
 	// Return the data
 	return SurfaceData<FloatingPoint>(moment, central);
+}
+
+template <typename Integer>
+void Surface<Integer>::saveProfile(const std::string& str) const {
+	std::ofstream file(str);
+	file << "profile = [";
+
+	file << _grid[0];
+	for (int i = 1; i < _size; ++i) file << ", " << _grid[i];
+
+	file << "];";
+	file.close();
 }
